@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A1 English Quiz Game</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#fff;--fg:#1d1b26;--mut:#6b6878;--t:#278187;--p:#772396;--tl:#e6f4f5;--pl:#f3e8f8;--ok:#1f9d55;--okl:#e3f7ea;--no:#d6336c;--nol:#fde8ef;--ln:#e6e3ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#15131c;--fg:#f3f1f8;--mut:#a29fb0;--t:#4fc3cb;--p:#c78be0;--tl:#16292c;--pl:#2a1d33;--okl:#12281c;--nol:#33141f;--ln:#2d2a38}}
+:root[data-theme=dark]{--bg:#15131c;--fg:#f3f1f8;--mut:#a29fb0;--t:#4fc3cb;--p:#c78be0;--tl:#16292c;--pl:#2a1d33;--okl:#12281c;--nol:#33141f;--ln:#2d2a38}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:Poppins,system-ui,sans-serif;overflow-y:auto}
+#app{max-width:640px;margin:0 auto;padding:18px 18px 40px;min-height:100%;display:flex;flex-direction:column}
+.hud{display:flex;align-items:center;gap:10px;font-weight:600;font-size:.9rem}
+.bar{flex:1;height:12px;background:var(--ln);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--t),var(--p));border-radius:9px;transition:width .4s}
+.pill{background:var(--pl);color:var(--p);padding:4px 11px;border-radius:99px;white-space:nowrap}
+.pill.s{background:var(--tl);color:var(--t)}
+.card{margin-top:22px;animation:pop .35s}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.chip{display:inline-block;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--t);padding:4px 12px;border-radius:99px}
+.chip.b{background:var(--p)}
+h1{font-size:2.2rem;line-height:1.15;margin:.3em 0}h1 span{color:var(--t)}h1 b{color:var(--p)}
+.q{font-size:1.3rem;font-weight:600;line-height:1.4;margin:14px 0 18px;white-space:pre-line}
+.o{display:block;width:100%;text-align:left;font:inherit;font-weight:500;font-size:1.05rem;color:var(--fg);background:var(--bg);border:2px solid var(--ln);border-bottom-width:5px;border-radius:16px;padding:13px 16px;margin-bottom:10px;cursor:pointer;transition:transform .1s,border-color .15s}
+.o:hover:not(:disabled){border-color:var(--t);transform:translateY(-2px)}
+.o.ok{border-color:var(--ok);background:var(--okl);animation:jump .4s}
+.o.no{border-color:var(--no);background:var(--nol);animation:shake .4s}
+.lv{position:relative}
+.o:disabled{cursor:default}
+@keyframes jump{50%{transform:scale(1.04)}}@keyframes shake{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+.fb{border-radius:16px;padding:14px 16px;margin:6px 0 14px;font-size:.95rem;line-height:1.5}
+.fb.ok{background:var(--okl)}.fb.no{background:var(--nol)}
+.go{font:inherit;font-weight:700;font-size:1.05rem;color:#fff;background:var(--p);border:0;border-bottom:5px solid #4d1563;border-radius:16px;padding:14px 26px;cursor:pointer;width:100%}
+.go.t{background:var(--t);border-bottom-color:#175358}
+.go:active{transform:translateY(3px);border-bottom-width:2px}
+.big{font-size:4rem;text-align:center;margin:10px 0}
+.sc{font-size:3rem;font-weight:700;text-align:center;color:var(--p)}
+.rv{background:var(--nol);border-radius:14px;padding:10px 14px;margin-bottom:8px;font-size:.9rem}
+.rv b{color:var(--ok)}
+.cf{position:fixed;top:-20px;font-size:1.6rem;animation:fall 1.8s linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(105vh) rotate(360deg)}}
+</style></head><body><div id="app"></div>
+<script>
+// [category, question, [correct, wrong1, wrong2, wrong3], explanation]
+const Q=[
+["Basics","Maria is my sister. ___ is a teacher.",["She","He","It","They"],"Maria é mulher: She."],
+["Basics","John has a car. ___ car is blue.",["His","Her","He","Their"],"John → ele → His (dele)."],
+["Basics","They ___ from Brazil.",["are","is","am","has"],"They / We / You usam are."],
+["Basics","She ___ a teacher. (negative)",["isn't","aren't","don't","doesn't"],"She is not = isn't. Com to be não usamos don't/doesn't."],
+["Basics","I have ___ umbrella.",["an","a","the","two"],"Umbrella começa com som de vogal: an."],
+["Basics","One box → two ___",["boxes","boxs","boxies","box"],"Palavras com x, s, ch, sh recebem -es."],
+["Basics","___ cars over there are new.",["Those","This","That","These"],"Vários + longe = Those."],
+["Basics","He ___ a brother.",["has","have","is","haves"],"He / She / It → has."],
+["Basics","There ___ three books on the table.",["are","is","has","have"],"Duas ou mais coisas: There are."],
+["Basics","I am ___.",["Brazilian","Brazil","Brazils","a Brazil"],"Brazil = país · Brazilian = nacionalidade."],
+["Basics","My mother's sister is my ___.",["aunt","cousin","uncle","grandmother"],"A irmã da sua mãe é sua tia: aunt."],
+["Basics","How do you say 7:45?",["It's quarter to eight.","It's half past seven.","It's quarter past seven.","It's seven o'clock."],"7:45 = quarter to eight."],
+["Basics","She ___ in a bank.",["works","work","working","is work"],"He / She / It recebem -s no Simple Present."],
+["Basics","___ she like pizza?",["Does","Do","Is","Are"],"Com he/she/it: Does + verbo normal."],
+["Basics","He doesn't ___ French.",["speak","speaks","speaking","to speak"],"Depois de doesn't, o verbo volta ao normal."],
+["Basics","I ___ drink coffee in the morning. (100% of the time)",["always","never","rarely","sometimes"],"always = sempre."],
+["Basics","She ___ speak English very well.",["can","cans","does can","is can"],"Can não recebe -s e vem antes do verbo normal."],
+["Basics","The meeting is ___ Monday.",["on","in","at","to"],"ON para dias e datas."],
+["Basics","I wake up ___ 7:00.",["at","on","in","to"],"AT para horários."],
+["Basics","___ do you live? — I live in Curitiba.",["Where","Who","When","Why"],"Where pergunta sobre lugar."],
+["Comparatives","My car is ___ than your car.",["faster","fast","more fast","fastest"],"Adjetivo curto: -er + than."],
+["Comparatives","English is ___ than Math for me.",["more interesting","interestinger","most interesting","the more interesting"],"Adjetivo longo: more + adjetivo + than."],
+["Superlatives","Mount Everest is the ___ mountain in the world.",["highest","higher","more high","most high"],"Adjetivo curto: the + -est."],
+["Superlatives","This is the ___ restaurant in the city. (expensive)",["most expensive","expensivest","more expensive","the more expensive"],"Adjetivo longo: the most + adjetivo."],
+["Superlatives","She is the ___ student in the class. (good)",["best","goodest","better","most good"],"Irregular: good → better → best."],
+["Comparatives","This pizza is ___ than that one. (bad)",["worse","badder","more bad","worst"],"Irregular: bad → worse → worst."],
+["Should","You have a headache. You ___ take a rest.",["should","shoulds","should to","are should"],"Should = conselho. Verbo normal, sem to e sem -s."],
+["Should","You ___ eat so much sugar. It's bad for you.",["shouldn't","don't should","not should","doesn't should"],"Negativa: should not = shouldn't."],
+["Should","___ I call the doctor?",["Should","Do","Does","Am"],"Na pergunta, should vem antes do sujeito."],
+["Simple Past","Yesterday I ___ English for two hours.",["studied","study","studyed","studies"],"Consoante + y → -ied: study → studied."],
+["Simple Past","She ___ to the market last week.",["went","goed","goes","gone"],"Irregular: go → went."],
+["Simple Past","They ___ work on Sunday.",["didn't","don't","weren't","didn't worked"],"Negativa no passado: didn't + verbo normal."],
+["Simple Past","___ you watch the movie last night?",["Did","Do","Were","Does"],"Pergunta no passado: Did + sujeito + verbo normal."],
+["Simple Past","We ___ at home yesterday.",["were","was","are","did"],"Passado do to be: I/He/She/It was · You/We/They were."],
+["Reading","Lucas works in an office from Monday to Friday. He likes his job, but he doesn't like waking up early. On weekends, he likes watching movies and meeting his friends.\n\nWhat does Lucas like doing on weekends?",["Watching movies and meeting friends","Working in an office","Waking up early","Studying English"],"Procure “On weekends” no texto: a resposta vem logo depois."]
+];
+const $=document.getElementById("app");
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+let L,i,pts,st,best,wrong;
+const CH={Basics:"",Comparatives:"b",Superlatives:"b",Should:"b","Simple Past":"b",Reading:""};
+const LV=[["🧱","Basics","Pronomes, to be, simple present, can, preposições…",["Basics","Reading"]],["📈","Comparatives & Superlatives","faster, more interesting, the best…",["Comparatives","Superlatives"]],["💡","Should","Conselhos: should / shouldn't",["Should"]],["⏪","Simple Past","Regulares, irregulares, didn't, did, was/were",["Simple Past"]],["🏆","Super Challenge","Todas as perguntas misturadas",null]];
+const SG={};let cur;
+function home(){$.innerHTML=`<div class=card><div class=big>🎮</div><h1>A1 English <span>Quiz</span> <b>Game</b></h1><p style="color:var(--mut)">Escolha uma fase. Ganhe pontos, mantenha a sequência 🔥 e conquiste as estrelas!</p>
+${LV.map((v,k)=>{const n=v[3]?Q.filter(q=>v[3].includes(q[0])).length:Q.length,s=SG[k]||0;return `<button class="o lv" data-k=${k}><span style="font-size:1.6rem">${v[0]}</span> <b>${v[1]}</b><br><small style="color:var(--mut)">${v[2]} · ${n} perguntas</small><span class=pill style="position:absolute;right:14px;top:14px">${s?"⭐".repeat(s):"☆☆☆"}</span></button>`}).join("")}</div>`;
+document.querySelectorAll(".lv").forEach(b=>b.onclick=()=>start(+b.dataset.k))}
+function start(k){cur=k;const f=LV[k][3];L=sh(f?Q.filter(q=>f.includes(q[0])):Q);i=0;pts=0;st=0;best=0;wrong=[];ask()}
+function ask(){const q=L[i],c=q[2][0],o=sh(q[2]);
+$.innerHTML=`<div class=hud><div class=bar><i style="width:${i/L.length*100}%"></i></div><span class="pill s">${i+1}/${L.length}</span><span class=pill>⭐ ${pts}</span><span class=pill>🔥 ${st}</span></div>
+<div class=card><span class="chip ${CH[q[0]]}">${q[0]}</span><div class=q>${q[1]}</div><div id=os>${o.map(x=>`<button class=o>${x}</button>`).join("")}</div><div id=fb></div></div>`;
+document.querySelectorAll(".o").forEach(b=>b.onclick=()=>pick(b,c,q))}
+function pick(b,c,q){const ok=b.textContent===c;
+document.querySelectorAll(".o").forEach(x=>{x.disabled=true;if(x.textContent===c)x.classList.add("ok")});
+if(ok){st++;best=Math.max(best,st);pts+=10+Math.min(st-1,5)*2;boom(ok&&st>2?"🔥":"🎉")}else{b.classList.add("no");st=0;wrong.push([q[1].split("\n")[0].slice(0,70),c])}
+const last=i==L.length-1;
+document.getElementById("fb").innerHTML=`<div class="fb ${ok?"ok":"no"}"><b>${ok?"✅ Correct!":"❌ Not quite."}</b> ${q[3]}</div><button class="go" id=nx>${last?"Ver resultado 🏆":"Next →"}</button>`;
+document.getElementById("nx").onclick=()=>{i++;last?end():ask()};document.getElementById("nx").scrollIntoView({block:"nearest",behavior:"smooth"})}
+function boom(e){for(let k=0;k<12;k++){const s=document.createElement("span");s.className="cf";s.textContent=e;s.style.left=Math.random()*95+"vw";s.style.animationDelay=Math.random()*.4+"s";document.body.appendChild(s);setTimeout(()=>s.remove(),2400)}}
+function end(){const n=L.length-wrong.length,r=n/L.length,stars=r>=.9?3:r>=.7?2:r>=.4?1:0;SG[cur]=Math.max(SG[cur]||0,stars);boom("🏆");
+$.innerHTML=`<div class=card><div class=big>${"⭐".repeat(stars)+"☆".repeat(3-stars)}</div><div class=sc>${pts} pts</div><p style="text-align:center;font-weight:600">${n} de ${L.length} corretas · melhor sequência 🔥 ${best}</p>
+${wrong.length?`<h3 style="color:var(--p)">Para revisar</h3>`+wrong.map(w=>`<div class=rv>${w[0]} → <b>${w[1]}</b></div>`).join(""):`<p style="text-align:center">Perfeito! 🎉</p>`}
+<button class="go t" id=re style="margin-top:12px">Jogar de novo 🔄</button><button class="go" id=hm style="margin-top:10px">Escolher outra fase 🗺️</button></div>`;document.getElementById("re").onclick=()=>start(cur);document.getElementById("hm").onclick=home}
+home();
+</script></body></html>
